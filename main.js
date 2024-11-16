@@ -19,7 +19,7 @@ const io = new Server(server, {
     transports: ['websocket', 'polling'] 
 });
 
-const PORT = process.env.PORT || 3010; 
+const PORT = process.env.PORT || 3000; 
 server.listen(PORT, () => {
     console.log(`Server is running on port ${PORT}`);
 });
