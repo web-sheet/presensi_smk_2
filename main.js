@@ -115,7 +115,7 @@ function setupMessageListener() {
 async function saveLocationToGoogleSheets(sender, latitude, longitude) {
     try {
         // const response = await fetch('https://script.google.com/macros/s/AKfycbyhauqc9QP2ht6DiFL2vJ4GnrDEGF7Q7BUL02LVx7Ja-oqNIyIv992xt6aLHZ_MCO-iJA/exec', {
-               const response = await fetch('https://script.google.com/macros/s/AKfycbxxTI1sKMGoPxA3RxDi6WNQRLmT9hrDDxYjjC19xwX5dl-u23_nqAEag_p1kTkrmODGjg/exec', {  
+               const response = await fetch('https://script.google.com/macros/s/AKfycby99l29tBIIk088Fd29clNRVmdJ-TLwl2Mchrd4FlJG1LH44t1P4EZnVlqvBT_8wIc/exec', {  
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ sender, latitude, longitude }),
@@ -131,7 +131,7 @@ async function saveLocationToGoogleSheets(sender, latitude, longitude) {
 
 async function handleResponse(sender) {
     try {
-        const response = await fetch('https://script.google.com/macros/s/AKfycbxxTI1sKMGoPxA3RxDi6WNQRLmT9hrDDxYjjC19xwX5dl-u23_nqAEag_p1kTkrmODGjg/exec?query=' + sender);
+        const response = await fetch('https://script.google.com/macros/s/AKfycby99l29tBIIk088Fd29clNRVmdJ-TLwl2Mchrd4FlJG1LH44t1P4EZnVlqvBT_8wIc/exec?query=' + sender);
         // const response = await fetch('https://script.google.com/macros/s/AKfycbyhauqc9QP2ht6DiFL2vJ4GnrDEGF7Q7BUL02LVx7Ja-oqNIyIv992xt6aLHZ_MCO-iJA/exec?query=' + sender); 
      const data = await response.json();
         
