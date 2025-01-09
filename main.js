@@ -1,13 +1,13 @@
 import fetch from 'node-fetch';
 import qrcode from 'qrcode-terminal'; 
-import { Client } from 'whatsapp-web.js';
+import pkg from 'whatsapp-web.js';
 import express from 'express';
 import path from 'path';
 import http from 'http';
 import { Server } from 'socket.io'; 
 import puppeteer from 'puppeteer-core';
 
- 
+const { Client, LocalAuth} = pkg;
 
 const app = express();
 const server = http.createServer(app);
@@ -19,7 +19,7 @@ const io = new Server(server, {
     transports: ['websocket', 'polling'] 
 });
 
-const PORT = process.env.PORT || 3010; 
+const PORT = process.env.PORT || 5000; 
 server.listen(PORT, () => {
     console.log(`Server is running on port ${PORT}`);
 });
@@ -44,7 +44,7 @@ app.post('/sendMessages', async (req, res) => {
 
 const client = new Client(
       
-    {restartOnAuthFail: true, 
+         { authStrategy: new LocalAuth({clientId: "client_one"}),
          puppeteer: { headless: true, args: ['--no-sandbox', '--disable-setuid-sandbox'] } });
 
 
@@ -78,21 +78,22 @@ function setupMessageListener() {
             return; 
         }
     
+        
         const messageBody = message.body;
         console.log(`Received message: ${messageBody}`);
     
         try {
             if (message.type === 'location') {
                 const sender = message.from;
-                const { latitude, longitude } = message.location;
-                console.log(`Received location: Latitude: ${latitude}, Longitude: ${longitude}`);
-                await saveLocationToGoogleSheets(sender, latitude, longitude);
+                const { latitude, longitude,  url  } = message.location;
+                console.log(`Received location: Latitude: ${latitude}, Longitude: ${longitude}, Deskripsi:   ${url}`);
+                await saveLocationToGoogleSheets(sender, latitude, longitude, url);
                 console.log(`Location saved for ${sender}`); // Log success
                 
-                // Call the function to handle response after saving location
+              
                 await handleResponse(sender);
                 return; 
-            }
+            } 
     
           
         } catch (error) {
@@ -112,13 +113,14 @@ function setupMessageListener() {
 
 
 
-async function saveLocationToGoogleSheets(sender, latitude, longitude) {
+async function saveLocationToGoogleSheets(sender, latitude, longitude, url) {
     try {
-        // const response = await fetch('https://script.google.com/macros/s/AKfycbyhauqc9QP2ht6DiFL2vJ4GnrDEGF7Q7BUL02LVx7Ja-oqNIyIv992xt6aLHZ_MCO-iJA/exec', {
-               const response = await fetch('https://script.google.com/macros/s/AKfycby99l29tBIIk088Fd29clNRVmdJ-TLwl2Mchrd4FlJG1LH44t1P4EZnVlqvBT_8wIc/exec', {  
+     
+           const response = await fetch('https://script.google.com/macros/s/AKfycby99l29tBIIk088Fd29clNRVmdJ-TLwl2Mchrd4FlJG1LH44t1P4EZnVlqvBT_8wIc/exec', {
+          
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ sender, latitude, longitude }),
+            body: JSON.stringify({ sender, latitude, longitude, url }),
         });
         const data = await response.json();
         console.log('Location saved to Google Sheets:', data);
@@ -131,9 +133,11 @@ async function saveLocationToGoogleSheets(sender, latitude, longitude) {
 
 async function handleResponse(sender) {
     try {
+        
         const response = await fetch('https://script.google.com/macros/s/AKfycby99l29tBIIk088Fd29clNRVmdJ-TLwl2Mchrd4FlJG1LH44t1P4EZnVlqvBT_8wIc/exec?query=' + sender);
-        // const response = await fetch('https://script.google.com/macros/s/AKfycbyhauqc9QP2ht6DiFL2vJ4GnrDEGF7Q7BUL02LVx7Ja-oqNIyIv992xt6aLHZ_MCO-iJA/exec?query=' + sender); 
-     const data = await response.json();
+       
+       
+        const data = await response.json();
         
         // Check if the response is not empty
         if (data.response) {
@@ -183,7 +187,7 @@ client.on('disconnected', async (reason) => {
 
 });
 
-
+ 
 
 
 
