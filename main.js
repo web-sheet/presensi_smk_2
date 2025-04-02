@@ -12,7 +12,7 @@ const __dirname = path.dirname(__filename);
 
 const { Client, LocalAuth} = pkg;
 
-const linkGsheet = 'https://script.google.com/macros/s/AKfycby99l29tBIIk088Fd29clNRVmdJ-TLwl2Mchrd4FlJG1LH44t1P4EZnVlqvBT_8wIc/exec';
+const linkGsheet = '';
 
 const app = express();
 const server = http.createServer(app);
@@ -49,8 +49,7 @@ app.post('/sendMessages', async (req, res) => {
 
 const client = new Client(
       
-         { restartOnAuthFail: true,
-        authStrategy: new LocalAuth(),
+         { restartOnAuthFail: true,         
          puppeteer: { headless: true, args: ['--no-sandbox', '--disable-setuid-sandbox'] } });
 
 
