@@ -5,9 +5,14 @@ import express from 'express';
 import path from 'path';
 import http from 'http';
 import { Server } from 'socket.io'; 
-import puppeteer from 'puppeteer-core';
+import { fileURLToPath } from 'url';
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
 
 const { Client, LocalAuth} = pkg;
+
+const linkGsheet = 'https://script.google.com/macros/s/AKfycby99l29tBIIk088Fd29clNRVmdJ-TLwl2Mchrd4FlJG1LH44t1P4EZnVlqvBT_8wIc/exec';
 
 const app = express();
 const server = http.createServer(app);
@@ -45,11 +50,16 @@ app.post('/sendMessages', async (req, res) => {
 const client = new Client(
       
          { restartOnAuthFail: true,
+        authStrategy: new LocalAuth(),
          puppeteer: { headless: true, args: ['--no-sandbox', '--disable-setuid-sandbox'] } });
 
 
 app.get('/qr', (req, res) => {
     res.sendFile(path.join(__dirname, 'public', 'index.html'));
+});
+
+app.get('/sendMessagePage', (req, res) => {
+    res.sendFile(path.join(__dirname, 'public', 'tesPesan.html'));
 });
 
 
@@ -63,6 +73,7 @@ let isMessageListenerSet = false; // Flag to track listener setup
 
 client.on('ready', () => {
     console.log('Client is ready!');
+    io.emit('clientConnected'); // Emit event to notify client
     if (!isMessageListenerSet) {
         setupMessageListener(); 
         isMessageListenerSet = true; 
@@ -116,7 +127,7 @@ function setupMessageListener() {
 async function saveLocationToGoogleSheets(sender, latitude, longitude, url) {
     try {
      
-           const response = await fetch('https://script.google.com/macros/s/AKfycby99l29tBIIk088Fd29clNRVmdJ-TLwl2Mchrd4FlJG1LH44t1P4EZnVlqvBT_8wIc/exec', {
+           const response = await fetch(linkGsheet, {
           
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
@@ -134,9 +145,7 @@ async function saveLocationToGoogleSheets(sender, latitude, longitude, url) {
 async function handleResponse(sender) {
     try {
         
-        const response = await fetch('https://script.google.com/macros/s/AKfycby99l29tBIIk088Fd29clNRVmdJ-TLwl2Mchrd4FlJG1LH44t1P4EZnVlqvBT_8wIc/exec?query=' + sender);
-       
-       
+        const response = await fetch(`${linkGsheet}?query=${sender}`);      
         const data = await response.json();
         
         // Check if the response is not empty
@@ -193,17 +202,4 @@ client.on('disconnected', async (reason) => {
 
 
 
-
-// async function saveMessageToGoogleSheets(senderNumber, messageBody,) {
-//     try {
-//         const response = await fetch('https://script.google.com/macros/s/AKfycbyFzI3fywUiQ11gzDuJAIdwU2VaofG9BYf4CS14-n_5jZcKEzqjr4jp_hZiObVRoHm1/exec', {
-//             method: 'POST',
-//             headers: { 'Content-Type': 'application/json' },
-//             body: JSON.stringify({sender: senderNumber, message: messageBody  }),
-//         });
-//         const data = await response.json();
-//         console.log('Message saved to Google Sheets:', data);
-//     } catch (error) {
-//         console.error('Error saving message:', error);
-//     }
-// }
+ 
